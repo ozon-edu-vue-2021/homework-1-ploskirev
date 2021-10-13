@@ -105,94 +105,113 @@
       });
     </script>
     <script>
-      const counterEl = document.querySelector(".js-app .counter");
-      const buttonElMinus = document.querySelector(".js-app .minus");
-      const buttonElPlus = document.querySelector(".js-app .plus");
-      const buttonElStepMinus = document.querySelector(".js-app .step-minus")
-      const buttonElStepPlus = document.querySelector(".js-app .step-plus")
-      const buttonElStepMultiply = document.querySelector(".js-app .step-multiply")
-      const buttonElStepDevide = document.querySelector(".js-app .step-devide")
-      const sumEl = document.querySelector(".js-app .sum");
-      const diffEl = document.querySelector(".js-app .diff");
-      const multiplyEl = document.querySelector(".js-app .multi");
-      const devideEl = document.querySelector(".js-app .devide");
-      const stepEl = document.querySelector(".js-app .step");
+      const SUM = 'sum'
+      const DIFF = 'diff'
+      const MULT = 'multiply'
+      const DEVIDE = 'devide'
+
+      const htmlElements = {
+        counterEl: document.querySelector(".js-app .counter"),
+        buttonElMinus: document.querySelector(".js-app .minus"),
+        buttonElPlus: document.querySelector(".js-app .plus"),
+        buttonElStepMinus: document.querySelector(".js-app .step-minus"),
+        buttonElStepPlus: document.querySelector(".js-app .step-plus"),
+        buttonElStepMultiply: document.querySelector(".js-app .step-multiply"),
+        buttonElStepDevide: document.querySelector(".js-app .step-devide"),
+        sumEl: document.querySelector(".js-app .sum"),
+        diffEl: document.querySelector(".js-app .diff"),
+        multiplyEl: document.querySelector(".js-app .multi"),
+        devideEl: document.querySelector(".js-app .devide"),
+        stepEl: document.querySelector(".js-app .step"),
+      }
+      
+      const $system = {
+        queue: [],
+        render(target, content) {
+          target.textContent = content
+        }
+      }
 
       const data = {
         counter: 1,
         step: 2,
       };
 
-      const incrementCounterHandler = function () {
-        data.counter++
-        counterEl.textContent = data.counter
-      };
-      const decrementCounterHandler = function () {
-        data.counter--
-        counterEl.textContent = data.counter
-      };
-
-      const incrementStepHandler = function () {
-        data.step += 2
-        stepEl.textContent = data.step
-      };
-      const decrementStepHandler = function () {
-        data.step -= 2
-        stepEl.textContent = data.step
-      };
-      const multiplyStepHandler = function () {
-        data.step *= 2
-        stepEl.textContent = data.step
-      };
-      const devideStepHandler = function () {
-        data.step /= 2
-        stepEl.textContent = data.step
-      };
-
-      //...
-      const getSum = function () {
-        sumEl.textContent = data.counter + data.step
-      };
-
-      const getDiff = function() {
-        diffEl.textContent = data.counter - data.step
+      const methods = {
+        updateCounter(type) {
+          if (type === SUM) {
+            data.counter++
+          } else if (type === DIFF) {
+            data.counter--
+          }
+        },
+        updateStep(type) {
+          switch (type) {
+            case SUM:
+              data.step += 2
+              return
+            case DIFF:
+              data.step -= 2
+              return
+            case MULT:
+              data.step *= 2
+              return
+            case DEVIDE:
+              data.step /= 2
+              return
+            default: return
+          }
+        }
       }
 
-      const getMultiple = function() {
-        multiplyEl.textContent = data.counter * data.step
+      const pseudoComputed = {
+        getSum() {
+          const result = data.counter + data.step
+          $system.render(htmlElements.sumEl, result)
+          return result
+        },
+        getDiff() {
+          const result = data.counter - data.step
+          $system.render(htmlElements.diffEl, result)
+          return result
+        },
+        getMultiple() {
+          const result = data.counter * data.step
+          $system.render(htmlElements.multiplyEl, result)
+          return result
+        },
+        getDevide() {
+          const result = data.counter / data.step
+          $system.render(htmlElements.devideEl, result)
+          return result
+        }
       }
 
-      const getDevide = function() {
-        devideEl.textContent = data.counter / data.step
-      }
 
       Object.keys(data).forEach((key) => {
-        let value = data[key]; // data.counter, data.counter1, data.counter2
-        const queue = []
-        queue.push(getSum, getDiff, getMultiple, getDevide);
+        const htmlEl = htmlElements[`${key}El`]
+        let value = data[key];
+        $system.queue.push(...Object.values(pseudoComputed));
+        $system.render(htmlEl, value)
+        $system.queue.forEach((fn) => fn());
         Object.defineProperty(data, key, {
           get: function () {
             return value;
           },
           set: function (newValue) {
             value = newValue;
-            queue.forEach((fn) => fn());
+            $system.render(htmlEl, newValue)
+            $system.queue.forEach((fn) => fn());
           },
         });
       });
 
-      counterEl.textContent = data.counter;
-      stepEl.textContent = data.step;
-      getSum();
-      getDiff();
-      getMultiple();
-      getDevide();
-      buttonElMinus.addEventListener("click", decrementCounterHandler);
-      buttonElPlus.addEventListener("click", incrementCounterHandler);
-      buttonElStepMinus.addEventListener("click", decrementStepHandler);
-      buttonElStepPlus.addEventListener("click", incrementStepHandler);
-      buttonElStepMultiply.addEventListener("click", multiplyStepHandler);
-      buttonElStepDevide.addEventListener("click", devideStepHandler);
+      htmlElements.buttonElMinus.addEventListener("click", () =>  methods.updateCounter(DIFF))
+      htmlElements.buttonElPlus.addEventListener("click", () =>  methods.updateCounter(SUM))
+      htmlElements.buttonElStepMinus.addEventListener("click", () =>  methods.updateStep(DIFF))
+      htmlElements.buttonElStepPlus.addEventListener("click", () =>  methods.updateStep(SUM))
+      htmlElements.buttonElStepMultiply.addEventListener("click", () =>  methods.updateStep(MULT))
+      htmlElements.buttonElStepDevide.addEventListener("click", () =>  methods.updateStep(DEVIDE))
     </script>
   </body>
 </html>
