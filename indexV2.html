@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>The Reactivity</title>
+    <link rel="stylesheet" href="./style/index.css" />
+    <link rel="icon" href="./images/vue-logo.svg" />
+    <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
+  </head>
+
+  <body>
+    <section class="app vue-app">
+      <h1>VUE</h1>
+      <h2>How much will?</h2>
+      <p>Counter: {{counter}}&nbsp;Step: {{step}}</p>
+      <div>
+        <div><strong>Sum: {{ sum }}</strong></div>
+        <div><strong>Diff: {{ diff }}</strong></div>
+        <div><strong>Multiply: {{ mult }}</strong></div>
+        <div><strong>Devide: {{ devide }}</strong></div>
+      </div>
+      <div class="math">
+        Counter:
+        <button class="button minus" v-on:click="decrementCounterHandler">
+          -1
+        </button>
+        <button class="button plus" v-on:click="incrementCounterHandler">
+          +1
+        </button>
+      </div>
+      <div class="math">
+        Step:
+        <button class="button minus" @click="decrementStepHandler">-2</button>
+        <button class="button plus" @click="incrementStepHandler">+2</button>
+        <button class="button multiply" @click="multiplyStepHandler">&times;2</button>
+        <button class="button devide" @click="devideStepHandler">&divide;2</button>
+      </div>
+    </section>
+    <hr />
+    <section class="app js-app">
+      <h1>JS</h1>
+      <h2>How much will!</h2>
+      <p>Counter: <span class="counter"></span>&nbsp;Step: <span class="step"></span></p>
+      <div>
+        <div><strong>Sum: <span class="sum"></span></strong></div>
+        <div><strong>Diff: <span class="diff"></span></strong></div>
+        <div><strong>Multiply: <span class="multi"></span></strong></div>
+        <div><strong>Devide: <span class="devide"></span></strong></div>
+      </div>
+      <div class="math">
+        Counter:
+        <button class="button minus">-1</button>
+        <button class="button plus">+1</button>
+      </div>
+      <div class="math">
+        Step:
+        <button class="button step-minus">-2</button>
+        <button class="button step-plus">+2</button>
+        <button class="button step-multiply">&times;2</button>
+        <button class="button step-devide">&divide;2</button>
+      </div>
+    </section>
+    <script>
+      const $vue = new Vue({
+        el: ".vue-app",
+        data: {
+          counter: 1,
+          step: 2,
+        },
+        methods: {
+          incrementCounterHandler() {
+            this.counter++
+          },
+          decrementCounterHandler() {
+            this.counter--
+          },
+          incrementStepHandler() {
+            this.step += 2
+          },
+          decrementStepHandler() {
+            this.step -= 2
+          },
+          multiplyStepHandler() {
+            this.step *= 2
+          },
+          devideStepHandler() {
+            this.step /= 2
+          }
+        },
+        computed: {
+          sum() {
+            return this.counter + this.step
+          },
+          diff() {
+            return this.counter - this.step
+          },
+          mult() {
+            return this.counter * this.step
+          },
+          devide() {
+            return this.counter / this.step
+          }
+        },
+      });
+    </script>
+    <script>
+      const SUM = 'sum'
+      const DIFF = 'diff'
+      const MULT = 'multiply'
+      const DEVIDE = 'devide'
+
+      const htmlElements = {
+        counterEl: document.querySelector(".js-app .counter"),
+        buttonElMinus: document.querySelector(".js-app .minus"),
+        buttonElPlus: document.querySelector(".js-app .plus"),
+        buttonElStepMinus: document.querySelector(".js-app .step-minus"),
+        buttonElStepPlus: document.querySelector(".js-app .step-plus"),
+        buttonElStepMultiply: document.querySelector(".js-app .step-multiply"),
+        buttonElStepDevide: document.querySelector(".js-app .step-devide"),
+        sumEl: document.querySelector(".js-app .sum"),
+        diffEl: document.querySelector(".js-app .diff"),
+        multiplyEl: document.querySelector(".js-app .multi"),
+        devideEl: document.querySelector(".js-app .devide"),
+        stepEl: document.querySelector(".js-app .step"),
+      }
+      
+      const $system = {
+        queue: [],
+        render(target, content) {
+          target.textContent = content
+        }
+      }
+
+      const data = {
+        counter: 1,
+        step: 2,
+      };
+
+      const methods = {
+        updateCounter(type) {
+          if (type === SUM) {
+            data.counter++
+          } else if (type === DIFF) {
+            data.counter--
+          }
+        },
+        updateStep(type) {
+          switch (type) {
+            case SUM:
+              data.step += 2
+              return
+            case DIFF:
+              data.step -= 2
+              return
+            case MULT:
+              data.step *= 2
+              return
+            case DEVIDE:
+              data.step /= 2
+              return
+            default: return
+          }
+        }
+      }
+
+      const pseudoComputed = {
+        getSum() {
+          const result = data.counter + data.step
+          $system.render(htmlElements.sumEl, result)
+          return result
+        },
+        getDiff() {
+          const result = data.counter - data.step
+          $system.render(htmlElements.diffEl, result)
+          return result
+        },
+        getMultiple() {
+          const result = data.counter * data.step
+          $system.render(htmlElements.multiplyEl, result)
+          return result
+        },
+        getDevide() {
+          const result = data.counter / data.step
+          $system.render(htmlElements.devideEl, result)
+          return result
+        }
+      }
+
+
+      Object.keys(data).forEach((key) => {
+        const htmlEl = htmlElements[`${key}El`]
+        let value = data[key];
+        $system.queue.push(...Object.values(pseudoComputed));
+        $system.render(htmlEl, value)
+        $system.queue.forEach((fn) => fn());
+        Object.defineProperty(data, key, {
+          get: function () {
+            return value;
+          },
+          set: function (newValue) {
+            value = newValue;
+            $system.render(htmlEl, newValue)
+            $system.queue.forEach((fn) => fn());
+          },
+        });
+      });
+
+      htmlElements.buttonElMinus.addEventListener("click", () =>  methods.updateCounter(DIFF))
+      htmlElements.buttonElPlus.addEventListener("click", () =>  methods.updateCounter(SUM))
+      htmlElements.buttonElStepMinus.addEventListener("click", () =>  methods.updateStep(DIFF))
+      htmlElements.buttonElStepPlus.addEventListener("click", () =>  methods.updateStep(SUM))
+      htmlElements.buttonElStepMultiply.addEventListener("click", () =>  methods.updateStep(MULT))
+      htmlElements.buttonElStepDevide.addEventListener("click", () =>  methods.updateStep(DEVIDE))
+    </script>
+  </body>
+</html>
